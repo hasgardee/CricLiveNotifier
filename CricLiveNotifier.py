@@ -56,6 +56,7 @@ def ConnectionIssue():
     print "Something went wrong.Please check your internet connection."
     sys.exit(0)
 if len(argv) == 1:
+    os.system('clear')
     print "Please wait.."
     try:
         livematches,livematches1 = urllib2.urlopen("http://synd.cricbuzz.com/j2me/1.0/livematches.xml"),urllib2.urlopen("http://synd.cricbuzz.com/j2me/1.0/livematches.xml")
