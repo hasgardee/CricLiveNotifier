@@ -1,6 +1,6 @@
 # CricLiveNotifier
 
-Live Cricket Score Notification for MAC OS users<br />
+Live Cricket Score Notification for MAC OS users<br /><br />
 ![img](http://i.imgur.com/5CzGRdh.png)<br />
 ![img](http://i.imgur.com/X0SZxLa.png)<br />
 ![img](http://i.imgur.com/WAVBDB2.png)<br />
