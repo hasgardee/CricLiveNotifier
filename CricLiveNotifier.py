@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import getpass
 import os
 from crontab import CronTab
@@ -5,6 +6,7 @@ from bs4 import BeautifulSoup
 import urllib2
 from xml.dom.minidom import parse, parseString
 import sys
+from math import ceil
 from sys import argv
 import Foundation
 import objc
@@ -33,14 +35,14 @@ def notify(clear, title, subtitle, info_text, url, delay=0, sound=False, userInf
         NSUserNotificationCenter.defaultUserNotificationCenter().removeAllDeliveredNotifications()
     else:
         NSUserNotificationCenter.defaultUserNotificationCenter().scheduleNotification_(notification)
-def StopCricLive():
+def StopCricLive(stop):
     tab.remove_all(comment="CricLiveNotifier")
     tab.write()
     try:
-        os.remove(path)
+        os.remove('CricLiveNotifier.txt')
     except OSError:
         pass
-    sys.exit(0)
+    if stop: sys.exit(0)
 def ConnectionIssue():
     print "Something went wrong.Please check your internet connection."
     sys.exit(0)
@@ -58,8 +60,9 @@ if len(argv) == 1:
     sp_status = ""
     for idx,mtch in enumerate(soup.findAll('match')):
         for sts in mtch.findAll('state'):
-            if sts.get('mchState') == 'tea' or sts.get('mchState') == 'innings break' or sts.get('mchState') == 'inprogress':
+            if sts.get('mchState') == 'tea' or sts.get('mchState') == 'lunch' or sts.get('mchState') == 'innings break' or sts.get('mchState') == 'inprogress':
                 if sts.get('mchState') == 'tea': sp_status = "Tea Break"
+                if sts.get('mchState') == 'lunch': sp_status = "Lunch Break"
                 if sts.get('mchState') == 'innings break': sp_status = "Innings Break"
                 match_list[idx+1] = mtch.get('datapath')
                 print '{0}: {1} - {2}'.format(idx+1,mtch.get('mchDesc'),mtch.get('mnum'))
@@ -88,12 +91,13 @@ if len(argv) == 1:
                 wickets = Ov.get('wkts')
                 runs = Ov.get('r')
                 break
+        StopCricLive(False)
         data = {"last_ball_updated": last_ball,"last_over_updated": last_over,"batting_team_id": bat_tm_id,"autoclose":int(auto_close),"sound":sound_alert}
-        cric_file = open('CricLiveNotifier.txt', 'w+')
+        com_file = os.path.dirname(os.path.realpath(__file__))+'/CricLiveNotifier.txt'
+        cric_file = open(com_file, 'w+')
         cric_file.truncate()
         pickle.dump(data, cric_file)
         cric_file.close()
-        StopCricLive()
         com_file = 'python '+os.path.realpath(__file__)+' '+ match_list[int(match_no)]
         cron_job = tab.new(command=com_file,comment="CricLiveNotifier")
         cron_job.minute.every(1)
@@ -110,19 +114,21 @@ if len(argv) == 1:
         print "There are currently no live cricket matches"
 if len(argv) > 1:
     if argv[1] == 'stop':
-        StopCricLive()
+        StopCricLive(True)
     else:
         match_link_com = argv[1] + "commentary.xml"
         try:
             commentary,commentary1 = urllib2.urlopen(match_link_com),urllib2.urlopen(match_link_com)
         except Exception:
             notify(False, "Something went wrong!", "CricLiveNotifier Turned Off", "Check your Internet Connection", "http://github.com/hasgar/CricLiveNotifier", sound=True)
-            StopCricLive()
+            StopCricLive(True)
         if "<html" in commentary.read():
             notify(False, "Something went wrong!", "CricLiveNotifier Turned Off", "Check your Internet Connection", "http://github.com/hasgar/CricLiveNotifier", sound=True)
-            StopCricLive()
+            StopCricLive(True)
+
         soup = BeautifulSoup(commentary1,"xml")
-        last_updated = pickle.load( open( "CricLiveNotifier.txt", "rb" ) )
+        com_file = os.path.dirname(os.path.realpath(__file__))+'/CricLiveNotifier.txt'
+        last_updated = pickle.load( open( com_file, "rb" ) )
         idx,balls_to_update,fours,sixes,wicket = 0,[],0,0,0
         balls_update = {"wickets": [],"fours": [],"sixers": []}
         for btId in soup.findAll('btTm'):
@@ -130,10 +136,13 @@ if len(argv) > 1:
             bat_tm_id = btId.get('id')
             for Ov in btId.findAll('Inngs'):
                 last_ball = Ov.get('ovrs')
+                last_ball1 = float(Ov.get('ovrs'))
                 wickets = Ov.get('wkts')
                 runs = Ov.get('r')
                 break
         new_team_id = bat_tm_id
+
+
         def check_ball(com):
             com_txt = com.text.split(',')
             if 'out' in com_txt[1].strip().lower():
@@ -163,15 +172,17 @@ if len(argv) > 1:
                             if idx == 0:last_ball_to_update,idx = com_txt[0],1
 
         if last_ball_to_update == 0:
-            last_updated['last_over_updated'] = int(round(last_updated['last_ball_updated']))
+            last_updated['last_over_updated'] = int(last_ball1)
         else:
-            if(last_updated['last_over_updated'] !=  int(round(last_ball_to_update))):
+            if last_updated['last_over_updated'] !=  int(last_ball1):
                 bat_tm_name = bat_tm_name+" "+runs+"/"+wickets
                 last_ball = last_ball + " Overs"
                 notify(False,"Over Update", bat_tm_name, last_ball,"", sound=True)
-            last_updated['last_over_updated'] = last_ball_to_update
-            last_updated['last_over_updated'] = int(round(last_updated['last_ball_updated']))
-        cric_file = open('CricLiveNotifier.txt', 'w+')
+            last_updated['last_over_updated'] = int(last_ball1)
+            last_updated['last_ball_updated'] = last_ball_to_update
+        print last_updated
+        com_file = os.path.dirname(os.path.realpath(__file__))+'/CricLiveNotifier.txt'
+        cric_file = open(com_file, 'w+')
         cric_file.truncate()
         pickle.dump(last_updated, cric_file)
         cric_file.close()
@@ -180,7 +191,7 @@ if len(argv) > 1:
                 if sts.get('mchState') == 'stump': title,subtitle = sts.get('addnStatus'),sts.get('status')
                 if sts.get('mchState') == 'complete': title,subtitle = "Match Over",sts.get('status')
                 notify(False,title, subtitle, "CricLiveNotifier Turned Off", "")
-                StopCricLive()
+                StopCricLive(True)
         if last_updated['autoclose'] > 0:
             time.sleep(last_updated['autoclose'])
             notify(True,"", "", "","")
