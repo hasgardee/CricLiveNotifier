@@ -15,7 +15,7 @@ Live Cricket Score Notification for MAC OS users<br /><br />
 # Requirements:
 
 * [Beautiful Soup] - Python library for pulling data out of HTML and XML files.
-* [lxml] - XML and HTML with Python
+* [lxml] - XML and HTML Parser for Python
 * [python-crontab] - Crontab module for read and writing crontab files
 * For better performance change Python Notification as 'Alerts' (after first run) at System preferences > Notifications > Python > Alerts
 
