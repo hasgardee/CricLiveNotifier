@@ -1,7 +1,7 @@
 '''
 https://github.com/hasgar/CricLiveNotifier
 This is my first python project.
-Please report issues and points to improve my programming style at github
+Please report issues and points to improve my programming style
 
 Regards,
 Hasgar
