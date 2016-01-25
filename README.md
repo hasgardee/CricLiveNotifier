@@ -34,3 +34,7 @@ The MIT License (MIT)
 # Bug Report:
 -----------
 Issue it here: https://github.com/hasgar/CricLiveNotifier/issues
+
+  [Beautiful Soup]: <http://www.crummy.com/software/BeautifulSoup/bs4/doc/>
+  [lxml]: <http://lxml.de/>
+  [python-crontab]: <https://pypi.python.org/pypi/python-crontab>
