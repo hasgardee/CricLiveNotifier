@@ -1,3 +1,10 @@
+'''
+https://github.com/hasgar/CricLiveNotifier
+This is my first python project.
+Please report issues and points to improve my programming style at github
+Regards,
+Hasgar
+'''
 #!/usr/bin/python
 import getpass
 import os
@@ -18,7 +25,7 @@ NSUserNotification = objc.lookUpClass('NSUserNotification')
 NSUserNotificationCenter = objc.lookUpClass('NSUserNotificationCenter')
 tab = CronTab(user=getpass.getuser())
 def notify(clear, title, subtitle, info_text, url, delay=0, sound=False, userInfo={}):
-
+    #Notification Triggering Function
     notification = NSUserNotification.alloc().init()
     notification.setTitle_(title)
     notification.setSubtitle_(subtitle)
@@ -36,6 +43,7 @@ def notify(clear, title, subtitle, info_text, url, delay=0, sound=False, userInf
     else:
         NSUserNotificationCenter.defaultUserNotificationCenter().scheduleNotification_(notification)
 def StopCricLive(stop):
+    #If any network issue while fecthing from crontab
     tab.remove_all(comment="CricLiveNotifier")
     tab.write()
     try:
@@ -44,6 +52,7 @@ def StopCricLive(stop):
         pass
     if stop: sys.exit(0)
 def ConnectionIssue():
+    #If any network issue while fecthing livematches.xml
     print "Something went wrong.Please check your internet connection."
     sys.exit(0)
 if len(argv) == 1:
@@ -58,6 +67,7 @@ if len(argv) == 1:
     match_list = {}
     os.system('clear')
     sp_status = ""
+    #Pulling livematches data from cricbuzz xml using BeautifulSoup for first notification after setup
     for idx,mtch in enumerate(soup.findAll('match')):
         for sts in mtch.findAll('state'):
             if sts.get('mchState') == 'tea' or sts.get('mchState') == 'lunch' or sts.get('mchState') == 'innings break' or sts.get('mchState') == 'inprogress':
@@ -66,6 +76,7 @@ if len(argv) == 1:
                 if sts.get('mchState') == 'innings break': sp_status = "Innings Break"
                 match_list[idx+1] = mtch.get('datapath')
                 print '{0}: {1} - {2}'.format(idx+1,mtch.get('mchDesc'),mtch.get('mnum'))
+    #Checking is there any match available now for score update
     if any(match_list):
         match_no = raw_input("Select your Match by Entering the Number > ")
         sound_alert = raw_input("Notification with sound (Y/N) > ")
@@ -82,6 +93,7 @@ if len(argv) == 1:
             ConnectionIssue()
         soup = BeautifulSoup(commentary1,"xml")
         bat_tm_id,last_ball,last_over,wickets,runs = 0,0.0,0,0,0
+        #Pulling selected match for first notification after setup
         for btId in soup.findAll('btTm'):
             bat_tm_id = btId.get('id')
             bat_tm_name = btId.get('sName')
@@ -92,6 +104,7 @@ if len(argv) == 1:
                 runs = Ov.get('r')
                 break
         StopCricLive(False)
+        #Adding data into CricLiveNotifier.txt for update sync
         data = {"last_ball_updated": last_ball,"last_over_updated": last_over,"batting_team_id": bat_tm_id,"autoclose":int(auto_close),"sound":sound_alert}
         com_file = os.path.dirname(os.path.realpath(__file__))+'/CricLiveNotifier.txt'
         cric_file = open(com_file, 'w+')
@@ -113,6 +126,7 @@ if len(argv) == 1:
     else:
         print "There are currently no live cricket matches"
 if len(argv) > 1:
+    #Call from crontab
     if argv[1] == 'stop':
         StopCricLive(True)
     else:
@@ -125,7 +139,7 @@ if len(argv) > 1:
         if "<html" in commentary.read():
             notify(False, "Something went wrong!", "CricLiveNotifier Turned Off", "Check your Internet Connection", "http://github.com/hasgar/CricLiveNotifier", sound=True)
             StopCricLive(True)
-
+        #Pulling Updated match data for updates
         soup = BeautifulSoup(commentary1,"xml")
         com_file = os.path.dirname(os.path.realpath(__file__))+'/CricLiveNotifier.txt'
         last_updated = pickle.load( open( com_file, "rb" ) )
@@ -144,6 +158,7 @@ if len(argv) > 1:
 
 
         def check_ball(com):
+            #Check everry ball has any bundary or wicket
             com_txt = com.text.split(',')
             if 'out' in com_txt[1].strip().lower():
                 notify(False,"WICKET!!!!!", com_txt[0], "","", sound=last_updated['sound'])
@@ -151,7 +166,7 @@ if len(argv) > 1:
                 notify(False,"SIIIXXXXX!!!!!", com_txt[0], "","", sound=last_updated['sound'])
             if 'four' in com_txt[1].strip().lower():
                 notify(False,"FOOURRRRR!!!!!", com_txt[0], "","", sound=last_updated['sound'])
-                #complete and stumb
+        #Check every ball
         last_ball_to_update = 0
         for com in soup.findAll('c'):
                 com_txt = com.text.split(' ')
@@ -172,15 +187,17 @@ if len(argv) > 1:
                             if idx == 0:last_ball_to_update,idx = com_txt[0],1
 
         if last_ball_to_update == 0:
+            #if no ball updates after previous update
             last_updated['last_over_updated'] = int(last_ball1)
         else:
+            #if new ball updates after previous update
             if last_updated['last_over_updated'] !=  int(last_ball1):
                 bat_tm_name = bat_tm_name+" "+runs+"/"+wickets
                 last_ball = last_ball + " Overs"
                 notify(False,"Over Update", bat_tm_name, last_ball,"", sound=True)
             last_updated['last_over_updated'] = int(last_ball1)
             last_updated['last_ball_updated'] = last_ball_to_update
-        print last_updated
+        #writing last updated data into CricLiveNotifier.txt' for update sync
         com_file = os.path.dirname(os.path.realpath(__file__))+'/CricLiveNotifier.txt'
         cric_file = open(com_file, 'w+')
         cric_file.truncate()
