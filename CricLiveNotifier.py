@@ -113,7 +113,7 @@ if len(argv) == 1:
         cric_file.truncate()
         pickle.dump(data, cric_file)
         cric_file.close()
-        com_file = 'python '+os.path.realpath(__file__)+' '+ match_list[int(match_no)]
+        com_file = 'python "'+os.path.realpath(__file__)+'" '+ match_list[int(match_no)]
         cron_job = tab.new(command=com_file,comment="CricLiveNotifier")
         cron_job.minute.every(1)
         tab.write()
