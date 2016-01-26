@@ -130,7 +130,8 @@ if len(argv) == 1:
 if len(argv) > 1:
     #Call from crontab
     if argv[1] == 'stop':
-        StopCricLive(True)
+        StopCricLive(False)
+        notify(False,"Bye Bye!", "CricLiveNotifier Turned Off!!", "","",sound=True)
     else:
         match_link_com = argv[1] + "commentary.xml"
         try:
