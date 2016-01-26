@@ -19,7 +19,7 @@ Live Cricket Score Notification for MAC OS users<br /><br />
 * For better performance change Python Notification as 'Alerts' (after first run) at System preferences > Notifications > Python > Alerts
 
 # How to Use:
-
+Start
 ```sh
 $ python CricLiveNotifier.py
 $ 1: RSA vs ENG - 4th Test
@@ -28,6 +28,11 @@ $ Select your Match by Entering the Number > 1
 $ Notification with sound (Y/N) > y
 $ Auto Close Notification after seconds( 0 - 15 && manual close - 0) > 0
 $ Done. Enjoy the match with CricLiveNotifier :)
+```
+
+Stop
+```sh
+$ python CricLiveNotifier.py stop
 ```
 # License:
 The MIT License (MIT)
