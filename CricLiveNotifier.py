@@ -144,6 +144,9 @@ if len(argv) > 1:
             StopCricLive(True)
         #Pulling Updated match data for updates
         soup = BeautifulSoup(commentary1,"xml")
+        for sts in soup.findAll('state'):
+            if sts.get('mchState') != 'inprogress':
+                sys.exit(0)
         com_file = os.path.dirname(os.path.realpath(__file__))+'/CricLiveNotifier.txt'
         last_updated = pickle.load( open( com_file, "rb" ) )
         idx,balls_to_update,fours,sixes,wicket = 0,[],0,0,0
