@@ -1,10 +1,5 @@
 '''
 https://github.com/hasgar/CricLiveNotifier
-This is my first python project.
-Please report issues and points to improve my programming style
-
-Regards,
-Hasgar
 '''
 #!/usr/bin/python
 import getpass
